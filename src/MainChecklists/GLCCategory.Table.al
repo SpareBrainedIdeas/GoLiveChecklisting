@@ -3,6 +3,8 @@ table 76001 "GLC Category"
     Caption = 'GLC Category';
     DataClassification = ToBeClassified;
     DataCaptionFields = Description;
+    LookupPageId = "GLC Categories List";
+    DrillDownPageId = "GLC Categories List";
 
     fields
     {

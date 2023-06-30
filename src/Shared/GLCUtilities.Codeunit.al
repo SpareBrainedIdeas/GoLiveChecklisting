@@ -7,7 +7,7 @@ codeunit 76002 "GLC Utilities"
     begin
         GLCCategory.SetRange(Description, NewCategoryDescription);
         GLCCategory.ReadIsolation(IsolationLevel::ReadCommitted);
-        GLCCategory.SetLoadFields(Id);
+        GLCCategory.SetLoadFields(Id, Description);
         if GLCCategory.FindFirst() then
             exit(GLCCategory.Id);
 
@@ -25,7 +25,7 @@ codeunit 76002 "GLC Utilities"
         GLCSubcategory.SetRange("Category Id", CategoryId);
         GLCSubcategory.SetRange(Description, NewSubcategoryDescription);
         GLCSubcategory.ReadIsolation(IsolationLevel::ReadCommitted);
-        GLCSubcategory.SetLoadFields(Id);
+        GLCSubcategory.SetLoadFields(Id, Description);
         if GLCSubcategory.FindFirst() then
             exit(GLCSubcategory.Id);
 
@@ -44,7 +44,7 @@ codeunit 76002 "GLC Utilities"
         GLCTestStep.SetRange("Subcategory Id", SubcategoryId);
         GLCTestStep.SetRange(Description, NewTestStepDescription);
         GLCTestStep.ReadIsolation(IsolationLevel::ReadCommitted);
-        GLCTestStep.SetLoadFields(Id);
+        GLCTestStep.SetLoadFields(Id, Description, "Test Codeunit Id");
         if GLCTestStep.FindFirst() then
             exit(GLCTestStep.Id);
 

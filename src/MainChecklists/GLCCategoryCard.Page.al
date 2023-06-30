@@ -2,6 +2,8 @@ page 76003 "GLC Category Card"
 {
     Caption = 'GLC Category Card';
     PageType = Card;
+    ApplicationArea = All;
+    UsageCategory = None;
     SourceTable = "GLC Category";
     Editable = false;
 
@@ -11,16 +13,16 @@ page 76003 "GLC Category Card"
         {
             group(General)
             {
+                Caption = 'General';
                 Visible = false;
+
                 field(Description; Rec.Description)
                 {
                     ToolTip = 'Specifies the value of the Description field.';
-                    ApplicationArea = All;
                 }
             }
             part(Subcategories; "GLC Subcategories")
             {
-                ApplicationArea = All;
                 SubPageLink = "Category Id" = field(Id);
             }
         }
@@ -46,7 +48,7 @@ page 76003 "GLC Category Card"
                     GLCCategories: Record "GLC Category";
                     GLCCheckRunner: Codeunit "GLC Check Runner";
                 begin
-                    CurrPage.GetRecord(GLCCategories);
+                    CurrPage.SetSelectionFilter(GLCCategories);
                     GLCCheckRunner.SetCategoryFilter(GLCCategories);
                     GLCCheckRunner.Run();
                 end;

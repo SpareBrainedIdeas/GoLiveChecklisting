@@ -31,7 +31,7 @@ codeunit 76000 "GLC Check Runner"
         if SubcategoryIdFilter <> '' then
             GLCSubcategory.SetFilter(Id, SubcategoryIdFilter);
 
-        GLCSubcategory.SetLoadFields(Id, "Category Id");
+        GLCSubcategory.SetLoadFields(Id, "Category Id", "Last Run Date");
         GLCSubcategory.ReadIsolation(IsolationLevel::UpdLock);
         if GLCSubcategory.FindSet(true) then
             repeat
