@@ -9,14 +9,11 @@ table 76001 "GLC Category"
         field(1; Id; Integer)
         {
             Caption = 'Id';
-            DataClassification = ToBeClassified;
         }
         field(10; Description; Text[100])
         {
             Caption = 'Description';
-            DataClassification = ToBeClassified;
         }
-
         field(1000; Results; Integer)
         {
             Caption = 'Results';
