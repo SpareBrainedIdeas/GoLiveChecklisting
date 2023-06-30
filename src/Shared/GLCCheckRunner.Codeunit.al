@@ -14,6 +14,9 @@ codeunit 76000 "GLC Check Runner"
 
         if CategoryIdFilter <> '' then
             GLCCategory.SetFilter(Id, CategoryIdFilter);
+
+        GLCCategory.SetLoadFields(Id);
+        GLCCategory.ReadIsolation(IsolationLevel::ReadCommitted);
         if GLCCategory.FindSet() then
             repeat
                 RunForCategory(GLCCategory, false);
@@ -27,10 +30,14 @@ codeunit 76000 "GLC Check Runner"
         GLCSubcategory.SetRange("Category Id", GLCCategory.Id);
         if SubcategoryIdFilter <> '' then
             GLCSubcategory.SetFilter(Id, SubcategoryIdFilter);
-        if GLCSubcategory.FindSet() then
+
+        GLCSubcategory.SetLoadFields(Id, "Category Id");
+        GLCSubcategory.ReadIsolation(IsolationLevel::UpdLock);
+        if GLCSubcategory.FindSet(true) then
             repeat
                 RunForSubcategory(GLCSubcategory, false);
-                GLCSubcategory."Last Run Date" := today();
+
+                GLCSubcategory.Validate("Last Run Date", Today());
                 GLCSubcategory.Modify(true);
             until GLCSubcategory.Next() < 1;
     end;
@@ -39,14 +46,19 @@ codeunit 76000 "GLC Check Runner"
     var
         GLCTestStep: Record "GLC Test Step";
         GLCResultHandler: Codeunit "GLC Result Handler";
+        RestStepErr: Label 'Error while running test: %1', Comment = '%1 = Last error text';
     begin
         GLCTestStep.SetRange("Category Id", GLCSubcategory."Category Id");
         GLCTestStep.SetRange("Subcategory Id", GLCSubcategory.Id);
-        GLCTestStep.SetFilter("Test Codeunit Id", '<>0');
-        if GLCTestStep.FindSet() then
+        GLCTestStep.SetFilter("Test Codeunit Id", '<>%1', 0);
+        // Not sure if setloadfields would be good here, since the variable is passed
+        // by reference, and used for a transferfields later.
+        GLCTestStep.ReadIsolation(IsolationLevel::UpdLock);
+        if GLCTestStep.FindSet(true) then
             repeat
                 if not Codeunit.Run(GLCTestStep."Test Codeunit Id") then
-                    GLCResultHandler.CacheError(StrSubstNo('Error while running test: %1', GetLastErrorText()));
+                    GLCResultHandler.CacheError(StrSubstNo(RestStepErr, GetLastErrorText()));
+
                 LogResults(GLCTestStep);
             until GLCTestStep.Next() = 0;
     end;
@@ -67,19 +79,21 @@ codeunit 76000 "GLC Check Runner"
     begin
         if CategoryId <> 0 then
             GLCTestResult.SetRange("Category Id", CategoryId);
+
         if SubcategoryId <> 0 then
             GLCTestResult.SetRange("Subcategory Id", SubcategoryId);
-        GLCTestResult.DeleteAll();
+
+        GLCTestResult.ReadIsolation(IsolationLevel::UpdLock);
+        if not GLCTestResult.IsEmpty then
+            GLCTestResult.DeleteAll(true);
     end;
 
     local procedure LogResults(var GLCTestStep: Record "GLC Test Step")
     var
         GLCTestResult: Record "GLC Test Result";
         GLCResultHandler: Codeunit "GLC Result Handler";
-        ResultList: List of [Text];
-        ErrorList: List of [Text];
-        ThisResult: Text;
-        ThisError: Text;
+        ResultList, ErrorList : List of [Text];
+        ThisResult, ThisError : Text;
         NextResultNo: Integer;
     begin
         ResultList := GLCResultHandler.GetResults();
@@ -89,30 +103,28 @@ codeunit 76000 "GLC Check Runner"
         foreach ThisResult in ResultList do begin
             GLCTestResult.Init();
             GLCTestResult.TransferFields(GLCTestStep, true);
-            GLCTestResult.Id := NextResultNo;
+            GLCTestResult.Validate(Id, NextResultNo);
             NextResultNo += 1;
-            GLCTestResult."Result Type" := GLCTestResult."Result Type"::Success;
-            GLCTestResult."Result Text" := CopyStr(ThisResult, 1, MaxStrLen(GLCTestResult."Result Text"));
+            GLCTestResult.Validate("Result Type", GLCTestResult."Result Type"::Success);
+            GLCTestResult.Validate("Result Text", CopyStr(ThisResult, 1, MaxStrLen(GLCTestResult."Result Text")));
             GLCTestResult.Insert(true);
         end;
 
         foreach ThisError in ErrorList do begin
             GLCTestResult.Init();
             GLCTestResult.TransferFields(GLCTestStep, true);
-            GLCTestResult.Id := NextResultNo;
+            GLCTestResult.Validate(Id, NextResultNo);
             NextResultNo += 1;
-            GLCTestResult."Result Type" := GLCTestResult."Result Type"::Failure;
-            GLCTestResult."Result Text" := CopyStr(ThisError, 1, MaxStrLen(GLCTestResult."Result Text"));
+            GLCTestResult.Validate("Result Type", GLCTestResult."Result Type"::Failure);
+            GLCTestResult.Validate("Result Text", CopyStr(ThisError, 1, MaxStrLen(GLCTestResult."Result Text")));
             GLCTestResult.Insert(true);
         end;
 
-        GLCTestStep."Last Run Success" := ErrorList.Count = 0;
+        GLCTestStep.Validate("Last Run Success", ErrorList.Count = 0);
         GLCTestStep.Modify(true);
 
         GLCResultHandler.ClearData();
     end;
-
-
 
     trigger OnAfterTestRun(CodeunitId: Integer; CodeunitName: Text; FunctionName: Text; Permissions: TestPermissions; Success: Boolean)
     begin
