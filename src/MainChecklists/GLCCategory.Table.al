@@ -42,6 +42,9 @@ table 76001 "GLC Category"
         {
             Clustered = true;
         }
+        key(Description; Description)
+        {
+        }
     }
 
 }

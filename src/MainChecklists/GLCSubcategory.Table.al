@@ -60,6 +60,9 @@ table 76002 "GLC Subcategory"
         {
             Clustered = true;
         }
+        key(Description; Description)
+        {
+        }
     }
 
 

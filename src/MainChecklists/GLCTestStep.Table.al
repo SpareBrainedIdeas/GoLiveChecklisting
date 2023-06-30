@@ -65,6 +65,9 @@ table 76003 "GLC Test Step"
         {
             Clustered = true;
         }
+        key(Description; Description)
+        {
+        }
     }
 
     trigger OnInsert()

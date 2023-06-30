@@ -6,12 +6,14 @@ codeunit 76002 "GLC Utilities"
         GLCCategory: Record "GLC Category";
     begin
         GLCCategory.SetRange(Description, NewCategoryDescription);
+        GLCCategory.ReadIsolation(IsolationLevel::ReadCommitted);
+        GLCCategory.SetLoadFields(Id);
         if GLCCategory.FindFirst() then
             exit(GLCCategory.Id);
 
         GLCCategory.Init();
-        GLCCategory.Id := Order;
-        GLCCategory.Description := NewCategoryDescription;
+        GLCCategory.Validate(Id, Order);
+        GLCCategory.Validate(Description, NewCategoryDescription);
         GLCCategory.Insert(true);
         exit(GLCCategory.Id);
     end;
@@ -22,12 +24,14 @@ codeunit 76002 "GLC Utilities"
     begin
         GLCSubcategory.SetRange("Category Id", CategoryId);
         GLCSubcategory.SetRange(Description, NewSubcategoryDescription);
+        GLCSubcategory.ReadIsolation(IsolationLevel::ReadCommitted);
+        GLCSubcategory.SetLoadFields(Id);
         if GLCSubcategory.FindFirst() then
             exit(GLCSubcategory.Id);
 
         GLCSubcategory.Init();
-        GLCSubcategory."Category Id" := CategoryId;
-        GLCSubcategory.Description := NewSubcategoryDescription;
+        GLCSubcategory.Validate("Category Id", CategoryId);
+        GLCSubcategory.Validate(Description, NewSubcategoryDescription);
         GLCSubcategory.Insert(true);
         exit(GLCSubcategory.Id);
     end;
@@ -39,14 +43,16 @@ codeunit 76002 "GLC Utilities"
         GLCTestStep.SetRange("Category Id", CategoryId);
         GLCTestStep.SetRange("Subcategory Id", SubcategoryId);
         GLCTestStep.SetRange(Description, NewTestStepDescription);
+        GLCTestStep.ReadIsolation(IsolationLevel::ReadCommitted);
+        GLCTestStep.SetLoadFields(Id);
         if GLCTestStep.FindFirst() then
             exit(GLCTestStep.Id);
 
         GLCTestStep.Init();
-        GLCTestStep."Category Id" := CategoryId;
-        GLCTestStep."Subcategory Id" := SubcategoryId;
-        GLCTestStep.Description := NewTestStepDescription;
-        GLCTestStep."Test Codeunit Id" := WhichCodeunitId;
+        GLCTestStep.Validate("Category Id", CategoryId);
+        GLCTestStep.Validate("Subcategory Id", SubcategoryId);
+        GLCTestStep.Validate(Description, NewTestStepDescription);
+        GLCTestStep.Validate("Test Codeunit Id", WhichCodeunitId);
         GLCTestStep.Insert(true);
         exit(GLCTestStep.Id);
     end;
@@ -55,10 +61,13 @@ codeunit 76002 "GLC Utilities"
     begin
         if (SuccessCount = 0) and (FailureCount = 0) then
             exit('Standard');
-        if (FailureCount = 0) then
+
+        if FailureCount = 0 then
             exit('Favorable');
-        if (SuccessCount = 0) then
+
+        if SuccessCount = 0 then
             exit('Unfavorable');
+
         exit('Ambiguous');
 
     end;
