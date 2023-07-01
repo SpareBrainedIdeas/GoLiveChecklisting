@@ -60,6 +60,9 @@ table 76002 "GLC Subcategory"
         {
             Clustered = true;
         }
+        key(Description; Description)
+        {
+        }
     }
 
 
@@ -74,6 +77,8 @@ table 76002 "GLC Subcategory"
         GLCSubcategory: Record "GLC Subcategory";
     begin
         GLCSubcategory.SetRange("Category Id", Rec."Category Id");
+        GLCSubcategory.ReadIsolation(IsolationLevel::UpdLock);
+        GLCSubcategory.SetLoadFields("Id");
         if GLCSubcategory.FindLast() then
             exit(GLCSubcategory."Id" + 1)
         else

@@ -3,20 +3,19 @@ table 76001 "GLC Category"
     Caption = 'GLC Category';
     DataClassification = ToBeClassified;
     DataCaptionFields = Description;
+    LookupPageId = "GLC Categories List";
+    DrillDownPageId = "GLC Categories List";
 
     fields
     {
         field(1; Id; Integer)
         {
             Caption = 'Id';
-            DataClassification = ToBeClassified;
         }
         field(10; Description; Text[100])
         {
             Caption = 'Description';
-            DataClassification = ToBeClassified;
         }
-
         field(1000; Results; Integer)
         {
             Caption = 'Results';
@@ -44,6 +43,9 @@ table 76001 "GLC Category"
         key(PK; "Id")
         {
             Clustered = true;
+        }
+        key(Description; Description)
+        {
         }
     }
 

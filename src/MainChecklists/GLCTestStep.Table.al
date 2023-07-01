@@ -10,39 +10,32 @@ table 76003 "GLC Test Step"
         field(1; "Category Id"; Integer)
         {
             Caption = 'Category Id';
-            DataClassification = ToBeClassified;
             TableRelation = "GLC Category";
         }
         field(2; "Subcategory Id"; Integer)
         {
             Caption = 'Subcategory Id';
-            DataClassification = ToBeClassified;
             TableRelation = "GLC Subcategory".Id where("Category Id" = field("Category Id"));
         }
         field(3; Id; Integer)
         {
             Caption = 'Id';
-            DataClassification = ToBeClassified;
         }
         field(12; Description; Text[100])
         {
             Caption = 'Description';
-            DataClassification = ToBeClassified;
         }
         field(15; "Test Codeunit Id"; Integer)
         {
             Caption = 'Test Codeunit Id';
-            DataClassification = ToBeClassified;
         }
         field(20; "Total Run Time"; Duration)
         {
             Caption = 'Total Run Time';
-            DataClassification = ToBeClassified;
         }
         field(30; "Last Run Success"; Boolean)
         {
             Caption = 'Last Run Success';
-            DataClassification = ToBeClassified;
         }
         field(1000; Results; Integer)
         {
@@ -72,6 +65,9 @@ table 76003 "GLC Test Step"
         {
             Clustered = true;
         }
+        key(Description; Description)
+        {
+        }
     }
 
     trigger OnInsert()
@@ -86,6 +82,8 @@ table 76003 "GLC Test Step"
     begin
         GLCTestStep.SetRange("Category Id", Rec."Category Id");
         GLCTestStep.SetRange("Subcategory Id", Rec."Subcategory Id");
+        GLCTestStep.ReadIsolation(IsolationLevel::UpdLock);
+        GLCTestStep.SetLoadFields("Id");
         if GLCTestStep.FindLast() then
             exit(GLCTestStep."Id" + 1)
         else
